@@ -1233,7 +1233,6 @@ namespace RealFuels
         private Rect guiWindowRect = new Rect(0, 0, 0, 0);
         private string myToolTip = string.Empty;
         private int counterTT;
-        private bool styleSetup = false;
         private bool editorLocked = false;
 
         private int toolTipWidth => EditorLogic.fetch.editorScreen == EditorScreen.Parts ? 220 : 300;
@@ -1253,12 +1252,6 @@ namespace RealFuels
 
             if (inPartsEditor && part.symmetryCounterparts.FirstOrDefault(p => p.persistentId < part.persistentId) is Part)
                 return;
-
-            if (!styleSetup)
-            {
-                styleSetup = true;
-                Styles.InitStyles();
-            }
 
             if (guiWindowRect.width == 0)
             {
