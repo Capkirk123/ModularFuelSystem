@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace RealFuels.Tanks
 {
@@ -28,7 +29,7 @@ namespace RealFuels.Tanks
         [Persistent]
         public float maxUtilization = 0;
 
-        public Tanks.FuelTankList tankList = new Tanks.FuelTankList ();
+        public List<FuelTank> tankList = new List<FuelTank>();
 
 
         public TankDefinition() { }
@@ -40,25 +41,27 @@ namespace RealFuels.Tanks
 
         public void Load(ConfigNode node)
         {
-            if (! (node.name.Equals ("TANK_DEFINITION") && node.HasValue ("name"))) {
+            if (! (node.name.Equals ("TANK_DEFINITION") && node.HasValue ("name")))
                 return;
-            }
 
             ConfigNode.LoadObjectFromConfig(this, node);
-            tankList.Load(node);
-            for (int i = tankList.Count - 1; i >= 0; --i) {
-                var tank = tankList[i];
-                if (!tank.resourceAvailable) {
-                    //Debug.LogWarning ("[MFT] Unable to initialize tank definition for resource \"" + tank.name + "\" in tank definition \"" + name + "\" as this resource is not defined.");
-                    tankList.RemoveAt(i);
-                }
-            }
+            tankList.Clear();
+            tankList.AddRange(node.GetNodes("TANK").Where(n => n.HasValue("name")).Select(t => new FuelTank(t)));
+            tankList.RemoveAll(t => !t.resourceAvailable);
         }
 
-        public void Save (ConfigNode node)
+        public void Save(ConfigNode node) => Save(node, true);
+
+        public void Save(ConfigNode node, bool includeEmpty)
         {
             ConfigNode.CreateConfigFromObject(this, node);
-            tankList.Save(node, true);
+            // Don't spam save files with empty tank nodes, only save the relevant stuff
+            foreach (FuelTank tank in tankList.Where(t => includeEmpty || t.amount > 0 || t.maxAmount > 0))
+            {
+                ConfigNode tankNode = new ConfigNode("TANK");
+                tank.Save(tankNode);
+                node.AddNode(tankNode);
+            }
         }
     }
 }
