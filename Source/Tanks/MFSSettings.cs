@@ -77,8 +77,14 @@ namespace RealFuels
             if (!Initialized) Initialize();
         }
 
-        public static void Initialize ()
+        public static void ModuleManagerPostLoad() => Initialize();
+
+        public static void Initialize()
         {
+            resourceVsps.Clear();
+            resourceConductivities.Clear();
+            resourceGasses.Clear();
+
             // fill vsps & conductivities
             foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("RESOURCE_DEFINITION"))
             {
@@ -96,7 +102,7 @@ namespace RealFuels
             ConfigNode node = GameDatabase.Instance.GetConfigNodes("MFSSETTINGS").LastOrDefault();
             Debug.Log ("[MFS] Loading global settings");
 
-			if (node != null) {
+            if (node != null) {
                 node.TryGetValue("useRealisticMass", ref useRealisticMass);
                 node.TryGetValue("tankMassMultiplier", ref tankMassMultiplier);
                 node.TryGetValue("baseCostPV", ref baseCostPV);
@@ -106,21 +112,20 @@ namespace RealFuels
                 node.TryGetValue("basemassUseTotalVolume", ref basemassUseTotalVolume);
                 node.TryGetValue("radiatorMinTempMult", ref radiatorMinTempMult);
 
-                ConfigNode ignoreNode = node.GetNode("IgnoreFuelsForFill");
-				if (ignoreNode != null) {
-					foreach (ConfigNode.Value v in ignoreNode.values) {
+                ignoreFuelsForFill.Clear();
+                if (node.GetNode("IgnoreFuelsForFill") is ConfigNode ignoreNode)
+                    foreach (ConfigNode.Value v in ignoreNode.values)
                         ignoreFuelsForFill.Add(v.name);
-					}
-				}
-			}
+            }
 
+            tankDefinitions.Clear();
             foreach (ConfigNode defNode in GameDatabase.Instance.GetConfigNodes("TANK_DEFINITION")) {
                 if (tankDefinitions.ContainsKey(defNode.GetValue("name"))) {
                     Debug.LogWarning ("[MFS] Ignored duplicate definition of tank type " + defNode.GetValue ("name"));
                 } else {
                     var def = new Tanks.TankDefinition(defNode);
                     tankDefinitions.Add(def.name, def);
-				}
+                }
             }
             Initialized = true;
         }

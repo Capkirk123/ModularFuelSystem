@@ -97,6 +97,8 @@ namespace RealFuels
             return version;
         }
 
+        public void ModuleManagerPostLoad() => Init();
+
         private void Init()
         {
             ConfigNode node = GameDatabase.Instance.GetConfigNodes("RFSETTINGS").Last();
