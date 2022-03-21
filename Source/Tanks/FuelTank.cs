@@ -85,6 +85,8 @@ namespace RealFuels.Tanks
 		public Part part => module != null ? module.part : null;
 
 		public PartResource resource => part != null ? part.Resources[name] : null;
+		public double Volume => maxAmount / utilization;
+		public double FilledVolume => amount / utilization;
 
 		public void RaiseResourceInitialChanged(Part part, PartResource resource, double amount)
 		{
